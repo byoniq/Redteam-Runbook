@@ -1,0 +1,215 @@
+# Red Teaming Runbook
+
+---
+
+## Table of Contents
+
+1. [Introduction](#introduction)
+2. [Red Teaming Overview](#red-teaming-overview)
+3. [Team Structure and Roles](#team-structure-and-roles)
+4. [Red Team Engagement Phases](#red-team-engagement-phases)
+   - 4.1 [Planning](#planning)
+   - 4.2 [Reconnaissance](#reconnaissance)
+   - 4.3 [Weaponization](#weaponization)
+   - 4.4 [Delivery](#delivery)
+   - 4.5 [Exploitation](#exploitation)
+   - 4.6 [Command and Control](#command-and-control)
+   - 4.7 [Action on Objectives](#action-on-objectives)
+   - 4.8 [Reporting](#reporting)
+5. [Tactics, Techniques, and Procedures (TTPs)](#tactics-techniques-and-procedures-ttps)
+6. [Rules of Engagement (RoE)](#rules-of-engagement)
+7. [Tools and Infrastructure](#tools-and-infrastructure)
+8. [Operational Security (OPSEC)](#operational-security)
+9. [Simulating Different Threat Actors](#simulating-different-threat-actors)
+10. [Reporting and Post-Engagement](#reporting-and-post-engagement)
+11. [Lessons Learned and Continuous Improvement](#lessons-learned-and-continuous-improvement)
+12. [Compliance and Legal Considerations](#compliance-and-legal-considerations)
+13. [Appendices](#appendices)
+
+---
+
+## 1. Introduction
+Welcome to the **Red Teaming Runbook**. This document provides a structured approach for executing red team operations. It serves as a guide for red teamers to follow best practices during engagements to identify vulnerabilities, test incident response, and improve overall security posture.
+
+---
+
+## 2. Red Teaming Overview
+Red teaming is a full-scope, multi-layered approach to testing an organization's cybersecurity by simulating realistic adversary attacks. The goal is to identify and exploit weaknesses across people, processes, and technology.
+
+- **Purpose**: To simulate real-world attack scenarios and measure detection and response capabilities.
+- **Scope**: Focuses on both external and internal threats, covering physical, digital, and social engineering vectors.
+
+---
+
+## 3. Team Structure and Roles
+A successful red team requires a range of skills and clearly defined roles. Below is a sample breakdown of typical red team roles:
+
+### 3.1 Red Team Lead
+- Responsible for overall planning, execution, and reporting.
+- Coordinates with Blue Team and stakeholders.
+  
+### 3.2 Operators
+- Perform the actual attack activities, including network exploitation, application attacks, and physical breaches.
+
+### 3.3 Reconnaissance Specialist
+- Focuses on OSINT (Open-Source Intelligence) and pre-engagement intelligence gathering.
+
+### 3.4 Exploitation Specialist
+- Responsible for developing and executing custom exploits based on identified vulnerabilities.
+
+### 3.5 Infrastructure and Tools Engineer
+- Builds and maintains the red team’s attack infrastructure, including C2 servers and staging environments.
+
+---
+
+## 4. Red Team Engagement Phases
+
+### 4.1 Planning
+- Define goals, objectives, and success criteria.
+- Scope of the engagement.
+- Set timelines and communication plans.
+
+### 4.2 Reconnaissance
+- Conduct OSINT and technical recon.
+- Tools: Shodan, Google Dorking, Recon-ng.
+
+### 4.3 Weaponization
+- Develop custom malware, payloads, and exploits.
+- Tools: Metasploit, Cobalt Strike, Empire.
+
+### 4.4 Delivery
+- Deliver the payload to the target via phishing, USB drops, or network exploitation.
+- Tools: Phishing frameworks, custom scripts.
+
+### 4.5 Exploitation
+- Execute the attack and gain an initial foothold.
+- Exploiting web apps, network services, or endpoints.
+
+### 4.6 Command and Control (C2)
+- Maintain persistent access to the compromised system.
+- C2 Tools: Covenant, Cobalt Strike.
+
+### 4.7 Action on Objectives
+- Lateral movement, privilege escalation, and data exfiltration.
+- Techniques: Pass-the-hash, Kerberoasting.
+
+### 4.8 Reporting
+- Draft the initial findings and escalate to leadership.
+- Create detailed attack paths and remediations.
+
+---
+
+## 5. Tactics, Techniques, and Procedures (TTPs)
+Outline the common tactics used by adversaries, and how the red team can replicate these during an engagement. Examples of TTPs include:
+
+- **Initial Access**: Spear phishing, exploit vulnerabilities, supply chain attacks.
+- **Execution**: PowerShell scripts, DLL injection, remote code execution.
+- **Persistence**: Scheduled tasks, registry modifications, web shells.
+
+---
+
+## 6. Rules of Engagement (RoE)
+The RoE outlines the constraints and limitations on red team activities to ensure operations remain within legal and ethical bounds.
+
+- **Do’s**: 
+  - Target systems agreed upon by stakeholders.
+  - Respect operational hours for critical systems.
+  
+- **Don’ts**:
+  - Avoid attacks that could result in data loss or corruption.
+  - No physical harm to employees or intentional service disruptions.
+
+---
+
+## 7. Tools and Infrastructure
+Detail the tools commonly used for various stages of a red team engagement:
+
+### 7.1 Reconnaissance Tools
+- **OSINT**: Recon-ng, Maltego, SpiderFoot.
+- **Network Scanners**: Nmap, Masscan.
+
+### 7.2 Exploitation Tools
+- **Vulnerability Scanners**: Nessus, OpenVAS.
+- **Payload Generators**: MSFVenom, Shellter.
+
+### 7.3 Command & Control (C2) Frameworks
+- **Cobalt Strike**
+- **Empire**
+- **Sliver**
+
+### 7.4 Custom Infrastructure
+- Guidelines for building resilient and covert C2 infrastructure using VPS, cloud providers, and domain fronting.
+
+---
+
+## 8. Operational Security (OPSEC)
+Best practices for ensuring the red team’s activities remain stealthy and undetected:
+
+- Use of encryption for all communications.
+- Avoid using corporate devices for red teaming.
+- Regularly rotate IP addresses and domains for C2 servers.
+
+---
+
+## 9. Simulating Different Threat Actors
+To provide realistic scenarios, the red team should simulate various types of attackers:
+
+### 9.1 Nation-State Attack Simulation
+- Target high-value systems and data.
+- Use advanced techniques like custom malware and zero-days.
+
+### 9.2 Insider Threat Simulation
+- Focus on gaining access through internal users or compromised credentials.
+- Blend in with normal traffic and behavior.
+
+---
+
+## 10. Reporting and Post-Engagement
+
+### 10.1 Attack Path Documentation
+- Provide detailed walkthroughs of how the red team exploited weaknesses.
+- Include screenshots, logs, and technical details of each step.
+
+### 10.2 Remediation Recommendations
+- Provide actionable recommendations to mitigate vulnerabilities.
+
+### 10.3 Executive Summary
+- A high-level overview of the engagement for C-suite leadership.
+
+---
+
+## 11. Lessons Learned and Continuous Improvement
+Each engagement should be followed by a review of:
+
+- **What went well**.
+- **What could be improved**.
+- **Changes to make for the next engagement**.
+
+---
+
+## 12. Compliance and Legal Considerations
+Ensure that all activities comply with legal frameworks such as:
+
+- **Computer Fraud and Abuse Act (CFAA)**
+- **General Data Protection Regulation (GDPR)**
+- **ISO 27001**
+
+---
+
+## 13. Appendices
+
+### 13.1 Glossary of Terms
+- **C2**: Command and Control
+- **TTPs**: Tactics, Techniques, and Procedures
+
+### 13.2 Example Reports
+- Include a sanitized example of a red team engagement report.
+  
+### 13.3 Tool Configuration
+- Example configurations for commonly used red team tools like Cobalt Strike and Empire.
+
+---
+
+## Conclusion
+This runbook is intended to serve as a guide for executing red team engagements, providing a structured approach to attacking and testing an organization’s security posture. Continuous improvement, legal adherence, and precision in execution are critical for successful operations.
+

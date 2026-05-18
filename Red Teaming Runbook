@@ -1,215 +1,272 @@
-# Red Teaming Runbook
+# Runbook
+
+Operator playbook. Linear, phase-by-phase, with concrete commands. Pair with the full methodology in [`README.md`](README.md).
+
+> **Authorization required for everything in this document.** Run only against systems and accounts named in a signed RoE.
 
 ---
 
-## Table of Contents
+## Phase 0: Mobilization
 
-1. [Introduction](#introduction)
-2. [Red Teaming Overview](#red-teaming-overview)
-3. [Team Structure and Roles](#team-structure-and-roles)
-4. [Red Team Engagement Phases](#red-team-engagement-phases)
-   - 4.1 [Planning](#planning)
-   - 4.2 [Reconnaissance](#reconnaissance)
-   - 4.3 [Weaponization](#weaponization)
-   - 4.4 [Delivery](#delivery)
-   - 4.5 [Exploitation](#exploitation)
-   - 4.6 [Command and Control](#command-and-control)
-   - 4.7 [Action on Objectives](#action-on-objectives)
-   - 4.8 [Reporting](#reporting)
-5. [Tactics, Techniques, and Procedures (TTPs)](#tactics-techniques-and-procedures-ttps)
-6. [Rules of Engagement (RoE)](#rules-of-engagement)
-7. [Tools and Infrastructure](#tools-and-infrastructure)
-8. [Operational Security (OPSEC)](#operational-security)
-9. [Simulating Different Threat Actors](#simulating-different-threat-actors)
-10. [Reporting and Post-Engagement](#reporting-and-post-engagement)
-11. [Lessons Learned and Continuous Improvement](#lessons-learned-and-continuous-improvement)
-12. [Compliance and Legal Considerations](#compliance-and-legal-considerations)
-13. [Appendices](#appendices)
+- [ ] RoE signed; Control Group contacts saved offline
+- [ ] Get-out-of-jail letter on operator phones (PDF + photo)
+- [ ] Engagement Slack/Signal/Matrix room live; ops bridge tested
+- [ ] Ghostwriter project created; everyone has access
+- [ ] Infrastructure stood up (team server, redirectors, phishing infra, payload domains)
+- [ ] Domains aged / categorized; mail records correct
+- [ ] Beacon Malleable C2 profile written, reviewed, not default
+- [ ] Loader chain built and tested against representative EDR
+- [ ] Test phishing template sent to in-team mailbox; rendering and link-click verified
+- [ ] Deconfliction process tested with Control Group
 
 ---
 
-## 1. Introduction
-Welcome to the **Red Teaming Runbook**. This document provides a structured approach for executing red team operations. It serves as a guide for red teamers to follow best practices during engagements to identify vulnerabilities, test incident response, and improve overall security posture.
+## Phase 1: Reconnaissance
+
+### External
+- [ ] Domains, subdomains, ASN, IP ranges enumerated
+- [ ] Cloud tenant ID, M365 sign-in domains identified
+- [ ] Edge tech fingerprinted (VPN, mail, identity providers)
+- [ ] Employee enum (LinkedIn → email format → user list)
+- [ ] Breach data reviewed for valid creds (within RoE)
+- [ ] GitHub/GitLab org reviewed for leaks
+- [ ] Cloud asset sweep (S3 / Blob / GCS / public DBs)
+- [ ] Shodan / Censys queries saved
+
+### Identity
+- [ ] Email format confirmed and validated
+- [ ] User list assembled (deduped, role-tagged where possible)
+- [ ] MFA posture inferred (M365 endpoints, OWA responses)
+- [ ] SSO provider identified (Okta, Entra, PingFederate, etc.)
 
 ---
 
-## 2. Red Teaming Overview
-Red teaming is a full-scope, multi-layered approach to testing an organization's cybersecurity by simulating realistic adversary attacks. The goal is to identify and exploit weaknesses across people, processes, and technology.
+## Phase 2: Initial Access
 
-- **Purpose**: To simulate real-world attack scenarios and measure detection and response capabilities.
-- **Scope**: Focuses on both external and internal threats, covering physical, digital, and social engineering vectors.
+Pick a primary path and a fallback. Don't burn multiple paths on the first move.
 
----
+### Phish — link (AiTM)
+- [ ] Evilginx3 phishlet selected/customized for target SSO
+- [ ] Domain warming complete
+- [ ] Sending IP reputation checked
+- [ ] Pretext written and reviewed
+- [ ] Targeted recipient list approved with Control Group
+- [ ] Send window agreed
+- [ ] Click + capture verified end-to-end in test
+- [ ] Token replay tested against M365/SSO
 
-## 3. Team Structure and Roles
-A successful red team requires a range of skills and clearly defined roles. Below is a sample breakdown of typical red team roles:
+### Phish — attachment
+- [ ] Delivery container chosen (HTML smuggling / ISO / LNK / etc.) based on target tech and MoTW behavior
+- [ ] Loader verified executing in lab with target EDR profile
+- [ ] Beacon callback verified through redirector chain
+- [ ] Pretext + lure document ready
+- [ ] Test send + receipt verified
 
-### 3.1 Red Team Lead
-- Responsible for overall planning, execution, and reporting.
-- Coordinates with Blue Team and stakeholders.
-  
-### 3.2 Operators
-- Perform the actual attack activities, including network exploitation, application attacks, and physical breaches.
+### Password spray
+- [ ] User list deduped against breach data
+- [ ] Lockout policy understood (don't lock out users)
+- [ ] Spray cadence: 1 password / N hours / per N users
+- [ ] Tooling: MSOLSpray, TREVORspray, DomainPasswordSpray
+- [ ] Conditional Access posture noted before spraying
+- [ ] Hits validated immediately; tokens captured
 
-### 3.3 Reconnaissance Specialist
-- Focuses on OSINT (Open-Source Intelligence) and pre-engagement intelligence gathering.
+### Public-facing exploit
+- [ ] CVE(s) verified applicable to target version
+- [ ] Exploit tested in lab against same version
+- [ ] Foothold post-exploit plan ready (don't pop a shell with no plan)
+- [ ] Control Group notified before exploitation against prod
 
-### 3.4 Exploitation Specialist
-- Responsible for developing and executing custom exploits based on identified vulnerabilities.
-
-### 3.5 Infrastructure and Tools Engineer
-- Builds and maintains the red team’s attack infrastructure, including C2 servers and staging environments.
-
----
-
-## 4. Red Team Engagement Phases
-
-### 4.1 Planning
-- Define goals, objectives, and success criteria.
-- Scope of the engagement.
-- Set timelines and communication plans.
-
-### 4.2 Reconnaissance
-- Conduct OSINT and technical recon.
-- Tools: Shodan, Google Dorking, Recon-ng.
-
-### 4.3 Weaponization
-- Develop custom malware, payloads, and exploits.
-- Tools: Metasploit, Cobalt Strike, Empire.
-
-### 4.4 Delivery
-- Deliver the payload to the target via phishing, USB drops, or network exploitation.
-- Tools: Phishing frameworks, custom scripts.
-
-### 4.5 Exploitation
-- Execute the attack and gain an initial foothold.
-- Exploiting web apps, network services, or endpoints.
-
-### 4.6 Command and Control (C2)
-- Maintain persistent access to the compromised system.
-- C2 Tools: Covenant, Cobalt Strike.
-
-### 4.7 Action on Objectives
-- Lateral movement, privilege escalation, and data exfiltration.
-- Techniques: Pass-the-hash, Kerberoasting.
-
-### 4.8 Reporting
-- Draft the initial findings and escalate to leadership.
-- Create detailed attack paths and remediations.
+### Foothold confirmation
+- [ ] C2 callback received, sleep set conservatively (≥ 60s + jitter)
+- [ ] Initial situational awareness from Beacon: `whoami /all`, `hostname`, `systeminfo` (or BOF equivalents — less noisy)
+- [ ] AV/EDR identified (BOF: [edrenum-bof](https://github.com/EncodeGroup/edrenum-bof), Seatbelt `AntiVirus`)
+- [ ] Logged callback in Ghostwriter
 
 ---
 
-## 5. Tactics, Techniques, and Procedures (TTPs)
-Outline the common tactics used by adversaries, and how the red team can replicate these during an engagement. Examples of TTPs include:
+## Phase 3: Situational Awareness (post-foothold)
 
-- **Initial Access**: Spear phishing, exploit vulnerabilities, supply chain attacks.
-- **Execution**: PowerShell scripts, DLL injection, remote code execution.
-- **Persistence**: Scheduled tasks, registry modifications, web shells.
+Quiet enumeration. Default tools are signatured — prefer BOFs and in-memory .NET.
 
----
-
-## 6. Rules of Engagement (RoE)
-The RoE outlines the constraints and limitations on red team activities to ensure operations remain within legal and ethical bounds.
-
-- **Do’s**: 
-  - Target systems agreed upon by stakeholders.
-  - Respect operational hours for critical systems.
-  
-- **Don’ts**:
-  - Avoid attacks that could result in data loss or corruption.
-  - No physical harm to employees or intentional service disruptions.
+- [ ] Local user/group context
+- [ ] Local privileges (`whoami /priv`)
+- [ ] Network position (`ipconfig /all`, route table, ARP cache)
+- [ ] Domain joined? Domain controller reachable?
+- [ ] Proxy / VPN posture for C2 egress validated
+- [ ] AV/EDR product, version, definitions date
+- [ ] Patch level / pending reboot
+- [ ] Recent users (RDP history, profile dir)
+- [ ] Mounted shares, mapped drives
+- [ ] Saved credentials (DPAPI, browser, RDP)
+- [ ] Installed software list (Seatbelt `Software`)
+- [ ] Scheduled tasks, services, autoruns (Seatbelt `AllChecks`)
 
 ---
 
-## 7. Tools and Infrastructure
-Detail the tools commonly used for various stages of a red team engagement:
+## Phase 4: AD Enumeration
 
-### 7.1 Reconnaissance Tools
-- **OSINT**: Recon-ng, Maltego, SpiderFoot.
-- **Network Scanners**: Nmap, Masscan.
+If joined to AD, get a graph.
 
-### 7.2 Exploitation Tools
-- **Vulnerability Scanners**: Nessus, OpenVAS.
-- **Payload Generators**: MSFVenom, Shellter.
-
-### 7.3 Command & Control (C2) Frameworks
-- **Cobalt Strike**
-- **Empire**
-- **Sliver**
-
-### 7.4 Custom Infrastructure
-- Guidelines for building resilient and covert C2 infrastructure using VPS, cloud providers, and domain fronting.
+- [ ] SharpHound or SOAPHound run (collection methods chosen for OPSEC: DCOnly vs All)
+- [ ] Output ingested to BloodHound CE
+- [ ] Shortest paths to high-value targets identified
+- [ ] Unconstrained delegation hosts mapped
+- [ ] Kerberoastable accounts identified
+- [ ] AS-REProastable accounts identified
+- [ ] AD CS templates enumerated (Certipy `find -vulnerable`)
+- [ ] LAPS attribute readable from current user? (check ACL)
+- [ ] GPO write rights?
+- [ ] DCSync rights anywhere on path?
 
 ---
 
-## 8. Operational Security (OPSEC)
-Best practices for ensuring the red team’s activities remain stealthy and undetected:
+## Phase 5: Credential Access
 
-- Use of encryption for all communications.
-- Avoid using corporate devices for red teaming.
-- Regularly rotate IP addresses and domains for C2 servers.
+Pick the quietest viable technique first.
 
----
+- [ ] Kerberoast where available; crack offline
+- [ ] AS-REProast where available
+- [ ] LSASS dump only if needed and EDR posture allows (nanodump preferred; consider PPL bypass requirements)
+- [ ] DPAPI sweep on operator-controlled host
+- [ ] Snaffler against accessible shares for cleartext creds
+- [ ] SYSVOL review (`Groups.xml` cpassword in legacy environments)
+- [ ] Browser credential extraction where in scope
+- [ ] LAPS read where authorized
 
-## 9. Simulating Different Threat Actors
-To provide realistic scenarios, the red team should simulate various types of attackers:
-
-### 9.1 Nation-State Attack Simulation
-- Target high-value systems and data.
-- Use advanced techniques like custom malware and zero-days.
-
-### 9.2 Insider Threat Simulation
-- Focus on gaining access through internal users or compromised credentials.
-- Blend in with normal traffic and behavior.
+Crack offline on dedicated GPU rig, never on operator box.
 
 ---
 
-## 10. Reporting and Post-Engagement
+## Phase 6: Privilege Escalation
 
-### 10.1 Attack Path Documentation
-- Provide detailed walkthroughs of how the red team exploited weaknesses.
-- Include screenshots, logs, and technical details of each step.
+### Local
+- [ ] PrivescCheck or WinPEAS output reviewed
+- [ ] SeImpersonate path (Potato variants) where applicable
+- [ ] Service misconfig / unquoted path / writable PATH
+- [ ] UAC bypass if needed for medium → high integrity
 
-### 10.2 Remediation Recommendations
-- Provide actionable recommendations to mitigate vulnerabilities.
-
-### 10.3 Executive Summary
-- A high-level overview of the engagement for C-suite leadership.
-
----
-
-## 11. Lessons Learned and Continuous Improvement
-Each engagement should be followed by a review of:
-
-- **What went well**.
-- **What could be improved**.
-- **Changes to make for the next engagement**.
+### Domain
+- [ ] BloodHound path executed step by step
+- [ ] Coercion + relay paths (PetitPotam / DFSCoerce → ntlmrelayx → LDAP / ADCS HTTP)
+- [ ] Shadow Credentials on accounts with `GenericWrite` / `GenericAll`
+- [ ] RBCD setup → S4U2self/S4U2proxy
+- [ ] AD CS abuse (ESC1/ESC8 most common)
+- [ ] DA achieved? Confirm separately via two independent methods before reporting
 
 ---
 
-## 12. Compliance and Legal Considerations
-Ensure that all activities comply with legal frameworks such as:
+## Phase 7: Lateral Movement
 
-- **Computer Fraud and Abuse Act (CFAA)**
-- **General Data Protection Regulation (GDPR)**
-- **ISO 27001**
-
----
-
-## 13. Appendices
-
-### 13.1 Glossary of Terms
-- **C2**: Command and Control
-- **TTPs**: Tactics, Techniques, and Procedures
-
-### 13.2 Example Reports
-- Include a sanitized example of a red team engagement report.
-  
-### 13.3 Tool Configuration
-- Example configurations for commonly used red team tools like Cobalt Strike and Empire.
+- [ ] Target selected from objectives, not opportunism
+- [ ] Quietest available auth method (Pass-the-Cert > Pass-the-Ticket > Pass-the-Hash > PSExec)
+- [ ] Peer-to-peer SMB/TCP Beacon spawned on lateral host before disconnecting
+- [ ] Egress reduced — one talker per segment
+- [ ] Lateral movement logged in Ghostwriter with timestamp + source/dest
 
 ---
 
-## Conclusion
-This runbook is intended to serve as a guide for executing red team engagements, providing a structured approach to attacking and testing an organization’s security posture. Continuous improvement, legal adherence, and precision in execution are critical for successful operations.
+## Phase 8: Objective Execution
 
+Per objective from RoE:
+
+- [ ] Access path documented end-to-end
+- [ ] Evidence captured (screenshots with redacted real data, file listings, sample documents per Control Group approval)
+- [ ] Crown-jewel access demonstrated, not actioned
+- [ ] If exfil authorized: encrypted archive, agreed channel, manifest of exact contents
+- [ ] Control Group notified at each pre-agreed checkpoint
+- [ ] Hard stops respected; pause and seek approval before crossing any
+
+---
+
+## Phase 9: Persistence (if engagement length warrants)
+
+- [ ] Long-haul implant on separate infrastructure
+- [ ] Persistence on host *not* used for active operations
+- [ ] Persistence method documented for cleanup
+- [ ] Trigger and dwell time tested
+- [ ] OPSEC: long sleep, low-traffic, different malleable profile
+
+---
+
+## Phase 10: Cleanup
+
+Every item created or modified must be removed or reverted.
+
+- [ ] List all dropped files (BOFs, binaries, scripts) → delete
+- [ ] List all created accounts → delete or disable per customer preference
+- [ ] List all modified ACLs / group memberships → revert
+- [ ] List all scheduled tasks / services / WMI subscriptions → remove
+- [ ] List all registry persistence → remove
+- [ ] List all certs issued (AD CS abuse) → notify customer for revocation
+- [ ] List all forged tickets / Shadow Credentials → notify customer
+- [ ] krbtgt reset recommended if Golden Ticket was used (× 2 with delay)
+- [ ] All Beacon callbacks terminated
+- [ ] Infrastructure decommissioned per schedule
+- [ ] Operator hosts wiped
+
+---
+
+## Phase 11: Reporting
+
+- [ ] Engagement timeline finalized
+- [ ] Each finding mapped to ATT&CK technique IDs
+- [ ] Reproduction steps verified by someone other than the executing operator
+- [ ] Detection guidance written per finding (Sigma rules, log sources, sample queries)
+- [ ] Executive summary written in business terms
+- [ ] Attack path diagram exported
+- [ ] IOC list compiled
+- [ ] Draft reviewed internally
+- [ ] Draft delivered for customer factual review
+- [ ] Final report delivered
+
+---
+
+## Phase 12: Debrief
+
+- [ ] Control Group debrief held
+- [ ] Joint purple readout scheduled and held with SOC / blue
+- [ ] Detection content delivered (rules, queries, log source recommendations)
+- [ ] Customer sign-off on artifact removal
+- [ ] Internal retrospective held; lessons logged
+- [ ] TTP library / playbooks updated
+
+---
+
+## Emergency Procedures
+
+- **Beacon caught / EDR alert observed** → don't task further, observe for response, notify Control Group on agreed channel within agreed window
+- **Operator credentials suspected exposed** → rotate immediately, audit recent ops
+- **Customer asks "is this you?"** → answer truthfully per RoE; the Control Group has the protocol for what to tell whom
+- **Unintended impact (service degraded, account locked, data altered)** → stop, document, notify Control Group immediately
+
+---
+
+## Reference Commands (Beacon / equivalent)
+
+These are illustrative — adapt to current tradecraft and EDR posture. Many built-in commands are signatured; prefer BOFs.
+
+| Need | Quiet option |
+|---|---|
+| Domain enum | SOAPHound, ADExplorer snapshot, `ldapsearch` BOF |
+| Local PE check | Seatbelt BOF (`AllChecks`) over PowerShell PrivescCheck |
+| Kerberoast | Rubeus BOF (`kerberoast /nowrap`) |
+| AS-REProast | Rubeus BOF (`asreproast /nowrap`) |
+| LSASS dump | nanodump BOF with `--silent` |
+| File search on share | SnaffPoint or Snaffler (off-host or in-memory) |
+| Cert template enum | Certipy `find -vulnerable -dc-ip <DC>` (off-host) |
+| Coerce + relay | PetitPotam / DFSCoerce → ntlmrelayx (off-host) |
+| Token manipulation | Rubeus, `make_token`, `steal_token` |
+| Lateral exec | `jump psexec_psh` → switch to `jump winrm` if SMB heavy |
+
+---
+
+## Reference Wordlists & Targets (for cracking)
+
+- [SecLists](https://github.com/danielmiessler/SecLists)
+- [weakpass](https://weakpass.com/)
+- [rockyou2021/2024](https://github.com/ohmybahgosh/RockYou2021.txt) (size, use sparingly)
+- Custom: `<Companyname><Year>!`, `<Companyname>123`, season+year, sport team + year, address numbers + word
+
+---
+
+End of runbook. Keep notes alongside in Ghostwriter / Obsidian; this file is a checklist, not a logbook.
